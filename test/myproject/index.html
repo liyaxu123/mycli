@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>点名表</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Helvetica Neue", Helvetica, Arial, "Microsoft Yahei", "Hiragino Sans GB", "Heiti SC", "WenQuanYi Micro Hei", sans-serif;
+      color: #333;
+    }
+
+    .box {
+      width: 100%;
+      height: 100%;
+    }
+
+    .h1 {
+      text-align: center;
+      height: 100px;
+      line-height: 100px;
+    }
+
+    .center {
+      height: calc(100% - 100px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="box">
+    <h1 class="h1">花落谁家？</h1>
+    <div class="center">
+      <div id="my-lucky"></div>
+    </div>
+  </div>
+  <script src="./index.js"></script>
+  <script defer src="./confetti.browser.min.js"></script>
+  <script>
+    // 学生名单
+    const students = ['崔玲玲', '杨照耀', '韩帅', '杨炎铠', '胡娜', '徐金鑫', '张欣欣', '张露露', '朱豪'];
+    // 被抽到过的学生
+    const alreadyStus = [];
+
+    // 生成奖品
+    function generatePrizes() {
+      // 文字的位置
+      const fontsTop = '10%';
+      // 奇数块的背景色
+      const oddBg = '#e9e8fe';
+      // 偶数块的背景色
+      const evenBg = '#b8c5f2';
+
+      const prizesList = [];
+
+      // 数组乱序
+      students.sort(() => Math.random() - 0.5)
+
+      students.forEach((stu, index) => {
+        const obj = {};
+        obj.fonts = [{
+          text: stu,
+          top: fontsTop
+        }]
+        obj.background = index % 2 === 0 ? evenBg : oddBg;
+
+        prizesList.push(obj);
+      })
+
+      return prizesList;
+    }
+
+    // 抽奖函数，解决重复问题
+    function fun() {
+      // 随机获取 0～prizes.length 之间的一个整数
+      const num = Math.floor(Math.random() * students.length);
+      if (alreadyStus.length < students.length) {
+        if (!alreadyStus.includes(students[num])) {
+          // 结束游戏，并抽取第num号奖品
+          myLucky.stop(num);
+          effectPlay()
+          alreadyStus.push(students[num])
+          // console.log(alreadyStus);
+        } else {
+          fun()
+        }
+      } else {
+        // 再来一轮
+        alreadyStus.length = 0;
+        fun()
+      }
+    }
+
+    // 配置转盘
+    const myLucky = new LuckyCanvas.LuckyWheel('#my-lucky', {
+      width: '350px',
+      height: '350px',
+      // 背景
+      blocks: [
+        {
+          padding: '22px',
+          imgs: [{
+            src: './images/1.jpg',
+            width: '100%',
+            height: '100%'
+          }]
+        },
+        {
+          imgs: [{
+            src: './images/2.png',
+            width: '100%',
+            height: '100%'
+          }]
+        }
+      ],
+      // 奖品
+      prizes: generatePrizes(),
+      // 开始按钮
+      buttons: [
+        { radius: '50%', background: '#617df2' },
+        { radius: '45%', background: '#afc8ff' },
+        {
+          radius: '40%', background: '#869cfa', pointer: true,
+          fonts: [{ text: '开始', top: '-20px' }]
+        },
+      ],
+      // 开始游戏
+      start: function () {
+        // 回到初始状态
+        // myLucky.init();
+        // 开始游戏
+        myLucky.play()
+        // 使用定时器模拟接口
+        setTimeout(fun, 3000)
+      },
+      // 游戏停止时触发
+      // end: function (prize) {
+      //   alert('今天中午吃: ' + prize.fonts[0].text)
+      // }
+    })
+
+    // 配置礼花效果
+    function effectPlay() {
+      var end = Date.now() + (5 * 1000);
+
+      // go Buckeyes!
+      var colors = ['#bb0000', '#ffffff'];
+
+      (function frame() {
+        window.confetti({
+          particleCount: 2,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: colors
+        });
+        window.confetti({
+          particleCount: 2,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: colors
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
+    }
+  </script>
+</body>
+
+</html>
